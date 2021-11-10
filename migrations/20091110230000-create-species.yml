@@ -1,0 +1,15 @@
+name: create-species
+description: Create Species table
+up: |-
+  CREATE TABLE IF NOT EXISTS natural_history_museum.species (
+      id varchar(16) CONSTRAINT species_id_key PRIMARY KEY,
+      scientific_name varchar(150) NOT NULL,
+      genus varchar(50) NOT NULL,
+      family varchar(50) NOT NULL,
+      "order" varchar(50) NOT NULL,
+      class varchar(50) NOT NULL,
+      phylum varchar(50) NOT NULL,
+      kingdom varchar(50) NOT NULL
+  );
+down: |-
+  DROP TABLE IF EXISTS natural_history_museum.species;
