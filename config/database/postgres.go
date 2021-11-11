@@ -4,15 +4,15 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"go.uber.org/zap"
-
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/luanapp/gin-example/pkg/logger"
+	"go.uber.org/zap"
 )
 
 const createSchemaSQL = "CREATE SCHEMA IF NOT EXISTS natural_history_museum;"
 
 var (
-	connection *pgx.Conn
+	connection *pgxpool.Pool
 	sugar      *zap.SugaredLogger
 )
 
@@ -23,7 +23,7 @@ func init() {
 func InitializeDB() {
 	var err error
 	url := "postgres://postgres:postgres@localhost:5432/postgres"
-	connection, err = pgx.Connect(context.Background(), url)
+	connection, err = pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		sugar.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func InitializeDB() {
 	}
 }
 
-func GetConnection() *pgx.Conn {
+func GetConnection() *pgxpool.Pool {
 	return connection
 }
 

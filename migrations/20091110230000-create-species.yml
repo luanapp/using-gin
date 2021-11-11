@@ -2,7 +2,7 @@ name: create-species
 description: Create Species table
 up: |-
   CREATE TABLE IF NOT EXISTS natural_history_museum.species (
-      id varchar(16) CONSTRAINT species_id_key PRIMARY KEY,
+      id varchar(36) CONSTRAINT species_id_key PRIMARY KEY,
       scientific_name varchar(150) NOT NULL,
       genus varchar(50) NOT NULL,
       family varchar(50) NOT NULL,
