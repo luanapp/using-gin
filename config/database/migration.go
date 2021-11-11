@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"io/ioutil"
 	"os"
 
@@ -30,8 +29,10 @@ CREATE TABLE IF NOT EXISTS natural_history_museum.migration (
     date timestamp DEFAULT now()
 );
 `
-	searchMigrationSQL = "SELECT m.id FROM natural_history_museum.migration m WHERE m.file = $1"
-	insertMigrationSQL = "INSERT INTO natural_history_museum.migration (file) VALUES ($1);"
+	selectAllMigrationsSQL = "SELECT m.file FROM natural_history_museum.migration m;"
+	searchMigrationSQL     = "SELECT m.id FROM natural_history_museum.migration m WHERE m.file = $1;"
+	insertMigrationSQL     = "INSERT INTO natural_history_museum.migration (file) VALUES ($1);"
+	deleteMigrationSQL     = "DELETE FROM natural_history_museum.migration m WHERE m.file = $1 ;"
 )
 
 func createMigrationTable(tx pgx.Tx) error {
@@ -39,17 +40,18 @@ func createMigrationTable(tx pgx.Tx) error {
 	if err != nil {
 		return err
 	}
-	sugar.Info("created migrationEntry table successfully")
+	sugar.Info("migration table was created or already exists")
 	return nil
 }
 
 func UpFromFilename(filename string) error {
 	file, err := os.Lstat(fmt.Sprintf("%s/%s", migrationsBaseDir, filename))
 	if err != nil {
+		sugar.Errorw("failed to apply migration", "file", file, "error", err.Error())
 		return err
 	}
 
-	m := readMigrationFromFile(migrationsBaseDir, file)
+	m := readMigrationFromFile(migrationsBaseDir, file.Name())
 	return upMigration(m)
 }
 
@@ -59,6 +61,7 @@ func Up() error {
 	for _, m := range migrations {
 		err := upMigration(m)
 		if err != nil {
+			sugar.Errorw("failed to apply migration", "file", m.filename, "error", err.Error())
 			return err
 		}
 	}
@@ -90,17 +93,51 @@ func upMigration(m *migration) error {
 	return nil
 }
 
-func prepareMigrationTransaction() (pgx.Tx, error) {
-	txOpt := pgx.TxOptions{
-		IsoLevel:   pgx.ReadCommitted,
-		AccessMode: pgx.ReadWrite,
+func DownFromFilename(filename string) error {
+	file, err := os.Lstat(fmt.Sprintf("%s/%s", migrationsBaseDir, filename))
+	if err != nil {
+		sugar.Errorw("failed to undo migration", "file", file, "error", err.Error())
+		return err
 	}
-	return connection.BeginTx(context.Background(), txOpt)
+
+	m := readMigrationFromFile(migrationsBaseDir, file.Name())
+	return downMigration(m)
 }
 
-/*func (m migration) down() error {
+func Down() error {
+	dbFiles := migrationFilesFromDB()
+
+	for _, file := range dbFiles {
+		m := readMigrationFromFile(migrationsBaseDir, file)
+		err := downMigration(m)
+		if err != nil {
+			sugar.Errorw("failed to undo migration", "file", file, "error", err.Error())
+			return err
+		}
+	}
 	return nil
-}*/
+}
+
+func downMigration(m *migration) error {
+	tx, err := prepareMigrationTransaction()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), m.Down)
+	if err != nil {
+		_ = tx.Rollback(context.Background())
+		return err
+	}
+	_, err = tx.Exec(context.Background(), deleteMigrationSQL, m.filename)
+	if err != nil {
+		_ = tx.Rollback(context.Background())
+		return err
+	}
+
+	_ = tx.Commit(context.Background())
+	return nil
+}
 
 /*func generateKey() string {
 	return time.Now().Format("20060102150405")
@@ -114,6 +151,32 @@ func MigrationExists(filename string) bool {
 	return result.Next()
 }
 
+func prepareMigrationTransaction() (pgx.Tx, error) {
+	txOpt := pgx.TxOptions{
+		IsoLevel:   pgx.ReadCommitted,
+		AccessMode: pgx.ReadWrite,
+	}
+	return connection.BeginTx(context.Background(), txOpt)
+}
+
+func migrationFilesFromDB() []string {
+	rows, err := connection.Query(context.Background(), selectAllMigrationsSQL)
+	if err != nil {
+		return nil
+	}
+
+	var files []string
+	for rows.Next() {
+		var file string
+		err = rows.Scan(&file)
+		if err != nil {
+			return nil
+		}
+		files = append(files, file)
+	}
+	return files
+}
+
 func readMigrationFromFiles() []*migration {
 	var mFiles []*migration
 
@@ -123,20 +186,20 @@ func readMigrationFromFiles() []*migration {
 	}
 
 	for _, file := range files {
-		mFile := readMigrationFromFile(migrationsBaseDir, file)
+		mFile := readMigrationFromFile(migrationsBaseDir, file.Name())
 		mFiles = append(mFiles, mFile)
 	}
 	return mFiles
 }
 
-func readMigrationFromFile(baseDir string, file fs.FileInfo) *migration {
+func readMigrationFromFile(baseDir string, file string) *migration {
 	mFile := &migration{}
-	fullPath := fmt.Sprintf("%s/%s", baseDir, file.Name())
+	fullPath := fmt.Sprintf("%s/%s", baseDir, file)
 	bytes, _ := ioutil.ReadFile(fullPath)
 	err := yaml.Unmarshal(bytes, mFile)
 	if err != nil {
 		sugar.Fatal(err)
 	}
-	mFile.filename = file.Name()
+	mFile.filename = file
 	return mFile
 }

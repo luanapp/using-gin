@@ -27,6 +27,14 @@ else
 	./build/migrate up -f $(filename)
 endif
 
+migrate-down: ## Undo all migrations already applied to the database (the migrations are located in the ./migrations folder). Run `make migrate-down filename=some_file.yml` to undo the migration only for this file
+	go build -v -o build/migrate cmd/migrate/main.go
+ifndef filename
+	./build/migrate down
+else
+	./build/migrate down -f $(filename)
+endif
+
 build: ## Build project binary
 	@go build -v -o build/bin cmd/using-gin/main.go
 .PHONY: build

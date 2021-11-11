@@ -67,6 +67,6 @@ func createSchema(tx pgx.Tx) error {
 	if err != nil {
 		return err
 	}
-	sugar.Info("created natural_history_museum schema successfully")
+	sugar.Info("natural_history_museum schema was created or already exists")
 	return nil
 }
