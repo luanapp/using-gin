@@ -6,7 +6,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 
-	"luana.com/gin-example/pkg/logger"
+	"github.com/luanapp/gin-example/pkg/logger"
 )
 
 const createSchemaSQL = "CREATE SCHEMA IF NOT EXISTS natural_history_museum;"
@@ -51,15 +51,15 @@ func InitializeDB() {
 	}
 }
 
+func GetConnection() *pgx.Conn {
+	return connection
+}
+
 func rollback(tx pgx.Tx) {
 	err := tx.Rollback(context.Background())
 	if err != nil {
 		sugar.Fatal(err)
 	}
-}
-
-func GetConnection() *pgx.Conn {
-	return connection
 }
 
 func createSchema(tx pgx.Tx) error {

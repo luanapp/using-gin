@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v4"
-	"luana.com/gin-example/config/database"
+	"github.com/luanapp/gin-example/config/database"
 )
 
 type (

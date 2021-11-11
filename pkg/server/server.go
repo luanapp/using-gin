@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"luana.com/gin-example/pkg/domain/species"
-	"luana.com/gin-example/pkg/logger"
+	"github.com/luanapp/gin-example/pkg/domain/species"
+	"github.com/luanapp/gin-example/pkg/logger"
 )
 
 type Server struct {

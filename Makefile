@@ -20,8 +20,12 @@ generate: ## Run go generate in the project root
 .PHONY: generate
 
 migrate-up: ## Run all migrations not yet applied to the database (the migrations are located in the ./migrations folder). Run `make migrate-up filename=some_file.yml` to run the migration only for this file
-	@go build -v -o build/migrate cmd/migrate/main.go
-	./build/migrate $(filename)
+	go build -v -o build/migrate cmd/migrate/main.go
+ifndef filename
+	./build/migrate up
+else
+	./build/migrate up -f $(filename)
+endif
 
 build: ## Build project binary
 	@go build -v -o build/bin cmd/using-gin/main.go

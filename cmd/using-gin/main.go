@@ -1,8 +1,8 @@
 package main
 
 import (
-	"luana.com/gin-example/config/database"
-	"luana.com/gin-example/pkg/server"
+	"github.com/luanapp/gin-example/config/database"
+	"github.com/luanapp/gin-example/pkg/server"
 )
 
 func main() {
