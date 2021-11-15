@@ -38,6 +38,8 @@ func (s *Server) Start() {
 	spRoute.GET("", spHandler.GetAll)
 	spRoute.GET("/:id", spHandler.GetById)
 	spRoute.POST("", spHandler.Save)
+	spRoute.PUT("/:id", spHandler.Update)
+	spRoute.DELETE("/:id", spHandler.Delete)
 
 	srv := http.Server{
 		Addr:    ":8080",

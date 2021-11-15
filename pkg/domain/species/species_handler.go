@@ -12,6 +12,8 @@ type (
 		GetAll(c *gin.Context)
 		GetById(c *gin.Context)
 		Save(c *gin.Context)
+		Update(c *gin.Context)
+		Delete(c *gin.Context)
 	}
 
 	Handler struct {
@@ -64,10 +66,42 @@ func (h *Handler) Save(c *gin.Context) {
 		return
 	}
 
-	savedSP, err := h.repo.Save(sp)
+	savedSP, err := h.repo.save(sp)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, savedSP)
+}
+
+func (h *Handler) Update(c *gin.Context) {
+	id := c.Param("id")
+
+	sp := new(Species)
+	err := c.Bind(sp)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	sp.Id = id
+	err = h.repo.update(sp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusAccepted)
+}
+
+func (h *Handler) Delete(c *gin.Context) {
+	id := c.Param("id")
+
+	err := h.repo.delete(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusAccepted)
 }

@@ -24,11 +24,24 @@ INSERT INTO natural_history_museum.species
 VALUES
 ($1, $2, $3, $4, $5, $6, $7, $8);
 `
+	updateSpSQL = `
+UPDATE natural_history_museum.species
+SET scientific_name = $1, genus = $2,
+    family = $3, "order" = $4, class = $5,
+    phylum = $6, kingdom = $7
+WHERE id = $8;
+`
+	deleteSpSQL = `
+DELETE FROM natural_history_museum.species
+WHERE id = $1;
+`
+
 	getByIdSQL = `
 SELECT
 	sp.id, sp.scientific_name, sp.genus, sp.family, sp."order", sp.class, sp.phylum, sp.kingdom
 FROM
-	natural_history_museum.species sp WHERE sp.id = $1;`
+	natural_history_museum.species sp WHERE sp.id = $1;
+`
 )
 
 var (
@@ -81,7 +94,7 @@ func (r *repository) getById(id string) (*Species, error) {
 	return &sp, nil
 }
 
-func (r *repository) Save(sp *Species) (*Species, error) {
+func (r *repository) save(sp *Species) (*Species, error) {
 	sp.Id = uuid.NewString()
 
 	_, err := r.conn.Query(context.Background(), insertSpSQL,
@@ -98,4 +111,21 @@ func (r *repository) Save(sp *Species) (*Species, error) {
 
 	sp, _ = r.getById(sp.Id)
 	return sp, nil
+}
+
+func (r *repository) update(sp *Species) error {
+	_, err := r.conn.Exec(context.Background(), updateSpSQL, sp.ScientificName, sp.Genus, sp.Family,
+		sp.Order, sp.Class, sp.Phylum, sp.Kingdom, sp.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *repository) delete(id string) error {
+	_, err := r.conn.Exec(context.Background(), deleteSpSQL, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
