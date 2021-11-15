@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -9,11 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-
+	"github.com/luanapp/gin-example/pkg/domain/health"
 	"github.com/luanapp/gin-example/pkg/domain/species"
 	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -34,6 +35,11 @@ func NewServer() *Server {
 func (s *Server) Start() {
 	r := gin.Default()
 
+	healthHandler := health.NewHandler()
+	healthRoute := r.Group("/status")
+	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
+	healthRoute.GET("/health", healthHandler.Health)
+
 	spHandler := species.NewHandler(species.DefaultRepository())
 	spRoute := r.Group("/species")
 	spRoute.GET("", spHandler.GetAll)
@@ -43,7 +49,7 @@ func (s *Server) Start() {
 	spRoute.DELETE("/:id", spHandler.Delete)
 
 	srv := http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
 		Handler: r,
 	}
 	go func() {

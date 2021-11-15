@@ -24,7 +24,7 @@ func init() {
 
 	if currEnv == "" {
 		envFiles = append(envFiles, ".env.local")
-	} else {
+	} else if currEnv != "production" {
 		envFiles = append(envFiles, fmt.Sprintf("%s/%s", ".env.", currEnv))
 	}
 

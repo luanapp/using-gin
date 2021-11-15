@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: using-gin-ingress
+spec:
+  rules:
+    - http:
+        paths:
+        - pathType: Prefix
+          path: /using-gin
+          backend:
+            service:
+              name: using-gin-svc
+              port:
+                number: 8080

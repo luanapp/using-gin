@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: using-gin
+  name: using-gin
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: using-gin
+  template:
+    metadata:
+      labels:
+        app: using-gin
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: natural-history-museum
+        image: luanapp/using-gin:0.1
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: using-gin
+        livenessProbe:
+          initialDelaySeconds: 30
+          httpGet:
+            port: 8080
+            path: /status
+            scheme: HTTP
+          timeoutSeconds: 3
+        readinessProbe:
+          initialDelaySeconds: 30
+          httpGet:
+            port: 8080
+            path: /status
+            scheme: HTTP
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+
+
