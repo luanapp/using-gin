@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -22,7 +24,8 @@ func init() {
 
 func InitializeDB() {
 	var err error
-	url := "postgres://postgres:postgres@localhost:5432/postgres"
+	url := os.Getenv("DATABASE_URL")
+	sugar.Infof("connecting to database %s", strings.Split(url, "@")[1])
 	connection, err = pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		sugar.Fatal(err)

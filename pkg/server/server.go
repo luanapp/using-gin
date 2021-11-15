@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/luanapp/gin-example/pkg/domain/species"
+	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 )
 
