@@ -33,14 +33,7 @@ spec:
         - configMapRef:
             name: using-gin
         livenessProbe:
-          initialDelaySeconds: 30
-          httpGet:
-            port: 8080
-            path: /status
-            scheme: HTTP
-          timeoutSeconds: 3
-        readinessProbe:
-          initialDelaySeconds: 30
+          initialDelaySeconds: 20
           httpGet:
             port: 8080
             path: /status
