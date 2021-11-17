@@ -8,6 +8,7 @@ init: ## Run me to download some of this project dependencies for coding normali
 	pre-commit install --hook-type pre-push
 	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
 	go install github.com/swaggo/swag/cmd/swag@latest
+	go get github.com/vektra/mockery/v2/.../
 
 commit: ## Commit changes using commitizen
 	@git cz
@@ -18,6 +19,7 @@ install: ## Rebuild the go.mod and go.sum files (removing unused ones)
 
 generate: ## Run go generate in the project root
 	@go generate ./...
+	@mockery --exported --dir ./pkg/domain/species/ --name repositorier --output ./pkg/domain/species --structname repositoryMock --filename repository_mock.go --inpackage
 .PHONY: generate
 
 generate-docs: ## Generate project documentation

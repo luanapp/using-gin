@@ -36,22 +36,7 @@ func NewServer() *Server {
 }
 
 func (s *Server) Start() {
-	r := gin.Default()
-
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	healthHandler := health.NewHandler()
-	healthRoute := r.Group("/status")
-	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
-	healthRoute.GET("/health", healthHandler.Health)
-
-	spHandler := species.NewHandler(species.DefaultRepository())
-	spRoute := r.Group("/species")
-	spRoute.GET("", spHandler.GetAll)
-	spRoute.GET("/:id", spHandler.GetById)
-	spRoute.POST("", spHandler.Save)
-	spRoute.PUT("/:id", spHandler.Update)
-	spRoute.DELETE("/:id", spHandler.Delete)
+	r := setupEngine()
 
 	srv := http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
@@ -76,4 +61,24 @@ func (s *Server) Start() {
 		sugar.Fatalw("Server forced to shutdown...", "error", err.Error())
 	}
 
+}
+
+func setupEngine() *gin.Engine {
+	r := gin.Default()
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	healthHandler := health.NewHandler()
+	healthRoute := r.Group("/status")
+	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
+	healthRoute.GET("/health", healthHandler.Health)
+
+	spHandler := species.DefaultHandler()
+	spRoute := r.Group("/species")
+	spRoute.GET("", spHandler.GetAll)
+	spRoute.GET("/:id", spHandler.GetById)
+	spRoute.POST("", spHandler.Save)
+	spRoute.PUT("/:id", spHandler.Update)
+	spRoute.DELETE("/:id", spHandler.Delete)
+	return r
 }

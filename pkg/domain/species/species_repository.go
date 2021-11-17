@@ -12,6 +12,14 @@ import (
 )
 
 type (
+	repositorier interface {
+		getAll() ([]Species, error)
+		getById(id string) (*Species, error)
+		save(sp *Species) (*Species, error)
+		update(sp *Species) error
+		delete(id string) error
+	}
+
 	repository struct {
 		conn *pgxpool.Pool
 	}
@@ -55,7 +63,7 @@ func init() {
 	sugar = logger.New()
 }
 
-func DefaultRepository() *repository {
+func defaultRepository() repositorier {
 	return &repository{
 		conn: database.GetConnection(),
 	}

@@ -1,0 +1,47 @@
+[
+  {
+    "scientific_name": "Phyllobates terribilis",
+    "genus": "Phyllobates",
+    "family": "Dendrobatidae",
+    "order": "Anura",
+    "class": "Amphibia",
+    "phylum": "Chordata",
+    "kingdom": "Animalia"
+  },
+  {
+    "scientific_name": "Allobates alessandroi",
+    "genus": "Allobates",
+    "family": "Dendrobatidae",
+    "order": "Anura",
+    "class": "Amphibia",
+    "phylum": "Chordata",
+    "kingdom": "Animalia"
+  },
+  {
+    "scientific_name": "Ameerega bilinguis",
+    "genus": "Ameerega",
+    "family": "Dendrobatidae",
+    "order": "Anura",
+    "class": "Amphibia",
+    "phylum": "Chordata",
+    "kingdom": "Animalia"
+  },
+  {
+    "scientific_name": "Ameerega andina",
+    "genus": "Ameerega",
+    "family": "Dendrobatidae",
+    "order": "Anura",
+    "class": "Amphibia",
+    "phylum": "Chordata",
+    "kingdom": "Animalia"
+  },
+  {
+    "scientific_name": "Ameerega boehmei",
+    "genus": "Ameerega",
+    "family": "Dendrobatidae",
+    "order": "Anura",
+    "class": "Amphibia",
+    "phylum": "Chordata",
+    "kingdom": "Animalia"
+  }
+]

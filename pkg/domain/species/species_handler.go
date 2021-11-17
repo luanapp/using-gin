@@ -17,7 +17,7 @@ type (
 	}
 
 	Handler struct {
-		repo *repository
+		repo repositorier
 	}
 
 	Species struct {
@@ -33,10 +33,14 @@ type (
 )
 
 // NewHandler returns a new repository object
-func NewHandler(repo *repository) Handlerer {
+func NewHandler(repo repositorier) Handlerer {
 	return &Handler{
 		repo: repo,
 	}
+}
+
+func DefaultHandler() Handlerer {
+	return NewHandler(defaultRepository())
 }
 
 // GetAll retrieve all species
