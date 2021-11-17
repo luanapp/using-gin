@@ -7,5 +7,7 @@ metadata:
   name: using-gin
 data:
   PORT: "8080"
-  DATABASE_URL: "postgres://postgres:postgres@172.25.0.2:5432/postgres"
+  ## TODO: create secret and add bellow as comment to retrieve passwd
+  ## kubectl get secret --namespace default psql-test-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode
+  DATABASE_URL: "postgres://postgres:tjQInNwXFO@postgres-postgresql.default.svc.cluster.local:5432/postgres"
   GIN_MODE: "release"

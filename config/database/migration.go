@@ -44,6 +44,7 @@ func createMigrationTable(tx pgx.Tx) error {
 	return nil
 }
 
+// UpFromFilename runs the up migration in the given file, if not yet applied
 func UpFromFilename(filename string) error {
 	file, err := os.Lstat(fmt.Sprintf("%s/%s", migrationsBaseDir, filename))
 	if err != nil {
@@ -55,6 +56,7 @@ func UpFromFilename(filename string) error {
 	return upMigration(m)
 }
 
+// Up run all migrations not yet applied in the database
 func Up() error {
 	migrations := readMigrationFromFiles()
 
@@ -75,7 +77,7 @@ func upMigration(m *migration) error {
 		return err
 	}
 
-	if !MigrationExists(m.filename) {
+	if !migrationExists(m.filename) {
 		_, err = tx.Exec(context.Background(), m.Up)
 		if err != nil {
 			_ = tx.Rollback(context.Background())
@@ -93,6 +95,7 @@ func upMigration(m *migration) error {
 	return nil
 }
 
+// DownFromFilename runs the down script in the database in the given filename
 func DownFromFilename(filename string) error {
 	file, err := os.Lstat(fmt.Sprintf("%s/%s", migrationsBaseDir, filename))
 	if err != nil {
@@ -104,6 +107,7 @@ func DownFromFilename(filename string) error {
 	return downMigration(m)
 }
 
+// Down run all down scripts applied in the database
 func Down() error {
 	dbFiles := migrationFilesFromDB()
 
@@ -143,7 +147,7 @@ func downMigration(m *migration) error {
 	return time.Now().Format("20060102150405")
 }*/
 
-func MigrationExists(filename string) bool {
+func migrationExists(filename string) bool {
 	result, err := connection.Query(context.Background(), searchMigrationSQL, filename)
 	if err != nil {
 		return false

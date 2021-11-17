@@ -18,6 +18,9 @@ type (
 )
 
 const (
+	selectAllSQL = `
+SELECT sp.id, sp.scientific_name, sp.genus, sp.family, sp."order", sp.class, sp.phylum, sp.kingdom FROM natural_history_museum.species sp;
+`
 	insertSpSQL = `
 INSERT INTO natural_history_museum.species
 (id, scientific_name, genus, family, "order", class, phylum, kingdom)
@@ -59,8 +62,7 @@ func DefaultRepository() *repository {
 }
 
 func (r *repository) getAll() ([]Species, error) {
-	sql := "SELECT sp.id, sp.scientific_name, sp.family FROM natural_history_museum.species sp;"
-	rows, err := r.conn.Query(context.Background(), sql)
+	rows, err := r.conn.Query(context.Background(), selectAllSQL)
 	if err != nil {
 		sugar.Errorw("failed to get species from database", "error", err.Error())
 		return nil, err
@@ -70,7 +72,7 @@ func (r *repository) getAll() ([]Species, error) {
 	sps := make([]Species, 0)
 	for rows.Next() {
 		var sp Species
-		err = rows.Scan(&sp.Id, &sp.ScientificName, &sp.Family)
+		err = rows.Scan(&sp.Id, &sp.ScientificName, &sp.Genus, &sp.Family, &sp.Order, &sp.Class, &sp.Phylum, &sp.Kingdom)
 		if err != nil {
 			sugar.Errorw("failed to get species from database", "error", err.Error())
 			return nil, err

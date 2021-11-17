@@ -22,6 +22,8 @@ func init() {
 	sugar = logger.New()
 }
 
+// InitializeDB this will start a connection pool with the database with the url DATABASE_URL
+// It will create the application schema if not exists. The same with the migration table
 func InitializeDB() {
 	var err error
 	url := os.Getenv("DATABASE_URL")
@@ -54,6 +56,7 @@ func InitializeDB() {
 	}
 }
 
+// GetConnection retrieve the application connection pool with the database
 func GetConnection() *pgxpool.Pool {
 	return connection
 }

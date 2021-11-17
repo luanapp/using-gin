@@ -14,6 +14,9 @@ import (
 	"github.com/luanapp/gin-example/pkg/domain/species"
 	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
+	_ "github.com/luanapp/gin-example/pkg/server/docs"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"go.uber.org/zap"
 )
 
@@ -34,6 +37,8 @@ func NewServer() *Server {
 
 func (s *Server) Start() {
 	r := gin.Default()
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	healthHandler := health.NewHandler()
 	healthRoute := r.Group("/status")

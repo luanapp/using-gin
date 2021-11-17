@@ -26,6 +26,12 @@ func NewHandler() Handlerer {
 	return &Handler{}
 }
 
+// Health server health check endpoint
+// @Summary Returns OK if the server is up
+// @Description This returns a JSON {"status": "OK"} with a status 200 if the server is up
+// @Tags health
+// @Success 200 {object} object
+// @Router /health [get]
 func (h *Handler) Health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }

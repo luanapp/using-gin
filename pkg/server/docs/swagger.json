@@ -1,0 +1,278 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Natural History Museum API documentation",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "This returns a JSON {\"status\": \"OK\"} with a status 200 if the server is up",
+                "tags": [
+                    "health"
+                ],
+                "summary": "Returns OK if the server is up",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/species": {
+            "get": {
+                "description": "Retrieves all species from database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "species"
+                ],
+                "summary": "Get all species",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/species.Species"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Saves the species information into database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "species"
+                ],
+                "summary": "Saves the given species",
+                "parameters": [
+                    {
+                        "description": "Species Payload",
+                        "name": "species",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/species.Species"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/species.Species"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/species/{id}": {
+            "get": {
+                "description": "Retrieves the species from database with the given id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "species"
+                ],
+                "summary": "Get species with the given id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Species ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/species.Species"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates the species information with the given id in the database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "species"
+                ],
+                "summary": "Updates the species with the given id",
+                "parameters": [
+                    {
+                        "description": "Species Payload",
+                        "name": "species",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/species.Species"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Species ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the species information with the given id from database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "species"
+                ],
+                "summary": "Deletes the species with the given id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Species ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "species.Species": {
+            "type": "object",
+            "required": [
+                "class",
+                "family",
+                "genus",
+                "kingdom",
+                "order",
+                "phylum",
+                "scientific_name"
+            ],
+            "properties": {
+                "class": {
+                    "type": "string",
+                    "example": "Amphibia"
+                },
+                "family": {
+                    "type": "string",
+                    "example": "Dendrobatidae"
+                },
+                "genus": {
+                    "type": "string",
+                    "example": "Phyllobates"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "996ff476-09bc-45f8-b79d-83b268de2485"
+                },
+                "kingdom": {
+                    "type": "string",
+                    "example": "Animalia"
+                },
+                "order": {
+                    "type": "string",
+                    "example": "Anura"
+                },
+                "phylum": {
+                    "type": "string",
+                    "example": "Chordata"
+                },
+                "scientific_name": {
+                    "type": "string",
+                    "example": "Phyllobates terribilis"
+                }
+            }
+        }
+    }
+}
