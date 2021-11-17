@@ -1,3 +1,6 @@
+[![Go Report Card][goreport-badge]][goreport-url]
+
+
 ## Golang projects - Using Gin
 This is one of a series of projects (I hope) for experimenting some go libraries.
 
@@ -30,3 +33,6 @@ make migrate-up
 ```
 
 Happy coding!
+
+[goreport-badge]:https://goreportcard.com/badge/github.com/luanapp/using-gin
+[goreport-url]:https://goreportcard.com/report/github.com/luanapp/using-gin
