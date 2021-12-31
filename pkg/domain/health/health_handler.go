@@ -40,13 +40,13 @@ func (h *Handler) StatusHandler() http.HandlerFunc {
 	statusHealth, _ := healthgo.New(healthgo.WithChecks(
 		healthgo.Config{
 			Name:    "server-status",
-			Timeout: time.Second * 5,
+			Timeout: time.Second * 2,
 			Check: httpCheck.New(httpCheck.Config{
 				URL: fmt.Sprintf("http://localhost:%s/status/health", os.Getenv("PORT")),
 			})},
 		healthgo.Config{
 			Name:    "postgres-status",
-			Timeout: time.Second * 5,
+			Timeout: time.Second * 3,
 			Check: postgresCheck.New(postgresCheck.Config{
 				DSN: fmt.Sprintf("%s?%s", os.Getenv("DATABASE_URL"), "sslmode=disable"),
 			}),

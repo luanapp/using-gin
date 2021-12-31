@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/luanapp/gin-example/pkg/domain/health"
 	"github.com/luanapp/gin-example/pkg/domain/species"
@@ -17,6 +18,7 @@ import (
 	_ "github.com/luanapp/gin-example/pkg/server/docs"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
+
 	"go.uber.org/zap"
 )
 
@@ -37,6 +39,7 @@ func NewServer() *Server {
 
 func (s *Server) Start() {
 	r := setupEngine()
+	setupMiddlewares(r)
 
 	srv := http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
@@ -61,6 +64,14 @@ func (s *Server) Start() {
 		sugar.Fatalw("Server forced to shutdown...", "error", err.Error())
 	}
 
+}
+
+func setupMiddlewares(r *gin.Engine) {
+	r.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+		AllowMethods:    []string{http.MethodHead, http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:    []string{"*"},
+	}))
 }
 
 func setupEngine() *gin.Engine {

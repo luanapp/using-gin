@@ -9,9 +9,11 @@ init: ## Run me to download some of this project dependencies for coding normali
 	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go get github.com/vektra/mockery/v2/.../
+.PHONY: init
 
 commit: ## Commit changes using commitizen
 	@git cz
+.PHONY: commit
 
 install: ## Rebuild the go.mod and go.sum files (removing unused ones)
 	@go mod tidy
@@ -24,6 +26,7 @@ generate: ## Run go generate in the project root
 
 generate-docs: ## Generate project documentation
 	@swag init -g cmd/using-gin/main.go -o pkg/server/docs
+.PHONY: generate-docs
 
 migrate-up: ## Run all migrations not yet applied to the database (the migrations are located in the ./migrations folder). Run `make migrate-up filename=some_file.yml` to run the migration only for this file
 	go build -v -o build/migrate cmd/migrate/main.go
@@ -32,6 +35,7 @@ ifndef filename
 else
 	./build/migrate up -f $(filename)
 endif
+.PHONY: migrate-up
 
 migrate-down: ## Undo all migrations already applied to the database (the migrations are located in the ./migrations folder). Run `make migrate-down filename=some_file.yml` to undo the migration only for this file
 	go build -v -o build/migrate cmd/migrate/main.go
@@ -40,6 +44,11 @@ ifndef filename
 else
 	./build/migrate down -f $(filename)
 endif
+.PHONY: migrate-down
+
+lint: ## Run lint
+	golangci-lint run
+.PHONY: lint
 
 build: ## Build project binary
 	@go build -v -o build/bin cmd/using-gin/main.go

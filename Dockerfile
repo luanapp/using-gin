@@ -1,11 +1,13 @@
-FROM golang:1.16-alpine as builder
+FROM golang:1.17-alpine as builder
 WORKDIR /build
+
+ARG GOARCH=amd64
 
 COPY go.mod .
 COPY go.sum .
 COPY . .
 
-RUN GOOS=linux GOARCH=amd64 GO111MODULE=on go build -v -o ./build/run cmd/using-gin/main.go
+RUN GOOS=linux GOARCH=$GOARCH GO111MODULE=on go build -v -o ./build/run cmd/using-gin/main.go
 
 FROM alpine
 WORKDIR /app
