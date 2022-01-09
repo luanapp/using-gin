@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -38,20 +39,13 @@ SELECT %s FROM natural_history_museum.%s %s;
 SELECT %s FROM natural_history_museum.%s %s WHERE sp.id = $1;
 `
 	insertSpSQL = `
-INSERT INTO natural_history_museum.species
-(id, scientific_name, genus, family, "order", class, phylum, kingdom)
-VALUES
-($1, $2, $3, $4, $5, $6, $7, $8);
+INSERT INTO natural_history_museum.%s (%s) VALUES (%s);
 `
 	updateSpSQL = `
-UPDATE natural_history_museum.species
-SET scientific_name = $1, genus = $2,
-    family = $3, "order" = $4, class = $5,
-    phylum = $6, kingdom = $7
-WHERE id = $8;
+UPDATE natural_history_museum.%s SET %s WHERE id = $8;
 `
 	deleteSpSQL = `
-DELETE FROM natural_history_museum.species
+DELETE FROM natural_history_museum.%s
 WHERE id = $1;
 `
 )
@@ -74,7 +68,7 @@ func defaultRepository[T model.Model]() Repository[T] {
 }
 
 func (r *repository[T]) GetAll() ([]T, error) {
-	fields, tableName, tablePrefix := r.getAllSelectFields()
+	fields, tableName, tablePrefix := r.getSelectAllFields()
 	selectAll := fmt.Sprintf(selectAllSQL, fields, tableName, tablePrefix)
 	sugar.Debugf("select all: %s", selectAll)
 
@@ -87,43 +81,47 @@ func (r *repository[T]) GetAll() ([]T, error) {
 
 	entities := make([]T, 0)
 	for rows.Next() {
-		var t T
-		fieldsAddrs := r.getAllSelectFieldsAddrs(t)
+		t := new(T)
+		fieldsAddrs := r.getVarFields(t, true, false)
 		err = rows.Scan(fieldsAddrs...)
 		if err != nil {
 			sugar.Errorw("failed to get data from database", "error", err.Error(), "table", tableName)
 			return nil, err
 		}
-		r.setFields(&t, fieldsAddrs)
-		entities = append(entities, t)
+		entities = append(entities, *t)
 	}
 
 	return entities, nil
 }
 
 func (r *repository[T]) GetById(id string) (*T, error) {
-	fields, tableName, tablePrefix := r.getAllSelectFields()
+	fields, tableName, tablePrefix := r.getSelectAllFields()
 	selectById := fmt.Sprintf(getByIdSQL, fields, tableName, tablePrefix)
 	sugar.Debugf("select by id: %s", selectById)
 
 	rows := r.conn.QueryRow(context.Background(), selectById, id)
 
-	var t T
-	fieldsAddrs := r.getAllSelectFieldsAddrs(t)
+	t := new(T)
+	fieldsAddrs := r.getVarFields(t, true, false)
 	err := rows.Scan(fieldsAddrs...)
 	if err != nil {
 		sugar.Errorw("failed to get data by id from database", "error", err.Error(), "table", tableName, "id", id)
 		return nil, err
 	}
-	r.setFields(&t, fieldsAddrs)
 
-	return &t, nil
+	return t, nil
 }
 
-func (r *repository[T]) Save(e *T) (*T, error) {
-	(*e).SetId(uuid.NewString())
+func (r *repository[T]) Save(t *T) (*T, error) {
+	(*t).SetId(uuid.NewString())
 
-	_, err := r.conn.Query(context.Background(), insertSpSQL) //e.Id, e.ScientificName, e.Genus, e.Family, e.Order, e.Class, e.Phylum, e.Kingdom)
+	table, fieldNames, fieldValues := r.getInsertionFields()
+	insert := fmt.Sprintf(insertSpSQL, table, fieldNames, fieldValues)
+	fields := r.getVarFields(t, false, false)
+
+	sugar.Debugf("insert: %s", insert)
+
+	_, err := r.conn.Query(context.Background(), insert, fields...)
 	if err != nil {
 		sugar.Errorw("failed to save species into database", "error", err.Error())
 		return nil, err
@@ -134,13 +132,20 @@ func (r *repository[T]) Save(e *T) (*T, error) {
 		return nil, err
 	}
 
-	e, _ = r.GetById((*e).GetId())
-	return e, nil
+	t, _ = r.GetById((*t).GetId())
+	return t, nil
 }
 
-func (r *repository[T]) Update(sp *T) error {
-	_, err := r.conn.Exec(context.Background(), updateSpSQL, nil) /*sp.ScientificName, sp.Genus, sp.Family,
-	sp.Order, sp.Class, sp.Phylum, sp.Kingdom, sp.Id)*/
+func (r *repository[T]) Update(t *T) error {
+	tableName, fieldNames := r.getUpdateFields()
+	update := fmt.Sprintf(updateSpSQL, tableName, fieldNames)
+	fields := r.getVarFields(t, false, true)
+
+	sugar.Debugf("update: %s", update)
+
+	fields = append(fields, (*t).GetId())
+
+	_, err := r.conn.Exec(context.Background(), update, fields...)
 	if err != nil {
 		return err
 	}
@@ -148,29 +153,49 @@ func (r *repository[T]) Update(sp *T) error {
 }
 
 func (r *repository[T]) Delete(id string) error {
-	_, err := r.conn.Exec(context.Background(), deleteSpSQL, id)
+	tableData := r.getTableData()
+	_, err := r.conn.Exec(context.Background(), fmt.Sprintf(deleteSpSQL, tableData[0]), id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *repository[T]) getAllSelectFields() (string, string, string) {
-	var e T
+func (r *repository[T]) getDBFieldsNames(ignorePk bool) []string {
+	var t T
 	var fieldsNames []string
 
-	v := reflect.ValueOf(e)
+	v := reflect.ValueOf(t)
 	for i := 0; i < v.NumField(); i++ {
 		tag := v.Type().Field(i).Tag.Get(dbTag)
 		if tag == "" {
 			continue
 		}
+		dbField, isPk := getTagParts(tag)
+		if ignorePk && isPk {
+			continue
+		}
 
-		fieldsNames = append(fieldsNames, tag)
+		fieldsNames = append(fieldsNames, dbField)
 	}
+	return fieldsNames
+}
+
+func getTagParts(tag string) (string, bool) {
+	values := strings.Split(tag, ",")
+
+	var isPk bool
+	if len(values) > 1 && values[1] == "pk" {
+		isPk = true
+	}
+	return values[0], isPk
+}
+
+func (r *repository[T]) getSelectAllFields() (sel, tableName, tableAlias string) {
+	fieldsNames := r.getDBFieldsNames(false)
 
 	var selectFields strings.Builder
-	tableData := tableNames[v.Type()]
+	tableData := r.getTableData()
 	for _, field := range fieldsNames {
 		selectFields.WriteString(tableData[1])
 		selectFields.WriteString(".\"")
@@ -181,33 +206,74 @@ func (r *repository[T]) getAllSelectFields() (string, string, string) {
 	return strings.TrimRight(selectFields.String(), ", "), tableData[0], tableData[1]
 }
 
-func (r *repository[T]) getAllSelectFieldsAddrs(e T) []any {
-	var fieldsAddrs []any
-	v := reflect.ValueOf(&e)
-
-	for i := 0; i < v.Elem().NumField(); i++ {
-		tag := v.Elem().Type().Field(i).Tag.Get(dbTag)
-		if tag == "" {
-			continue
-		}
-
-		addr := v.Elem().Field(i).Addr().Interface()
-		fieldsAddrs = append(fieldsAddrs, addr)
-	}
-	return fieldsAddrs
+func (r *repository[T]) getTableData() []string {
+	var t T
+	return tableNames[reflect.ValueOf(t).Type()]
 }
 
-func (r *repository[T]) setFields(e *T, addrs []any) {
-	v := reflect.ValueOf(e)
+func (r *repository[T]) getInsertionFields() (tableName, fields, fieldsValues string) {
+	fieldsNames := r.getDBFieldsNames(false)
+
+	var selectFields, valueFields strings.Builder
+	tableData := r.getTableData()
+	for i, field := range fieldsNames {
+		// fields
+		selectFields.WriteString("\"")
+		selectFields.WriteString(field)
+		selectFields.WriteString("\", ")
+
+		//values
+		valueFields.WriteString("$")
+		valueFields.WriteString(strconv.Itoa(i + 1))
+		valueFields.WriteString(", ")
+	}
+
+	return tableData[0], strings.TrimRight(selectFields.String(), ", "), strings.TrimRight(valueFields.String(), ", ")
+}
+
+func (r *repository[T]) getUpdateFields() (tableName, fields string) {
+	fieldsNames := r.getDBFieldsNames(true)
+
+	var selectFields strings.Builder
+	tableData := r.getTableData()
+	for i, field := range fieldsNames {
+		// field
+		selectFields.WriteString("\"")
+		selectFields.WriteString(field)
+		selectFields.WriteString("\"")
+
+		selectFields.WriteString(" = ")
+
+		//value
+		selectFields.WriteString("$")
+		selectFields.WriteString(strconv.Itoa(i + 1))
+		selectFields.WriteString(", ")
+	}
+
+	return tableData[0], strings.TrimRight(selectFields.String(), ", ")
+}
+
+func (r *repository[T]) getVarFields(t *T, returnAddr, ignorePk bool) []any {
+	var fields []any
+	v := reflect.ValueOf(t)
 
 	for i := 0; i < v.Elem().NumField(); i++ {
 		tag := v.Elem().Type().Field(i).Tag.Get(dbTag)
 		if tag == "" {
 			continue
 		}
+		_, isPk := getTagParts(tag)
+		if ignorePk && isPk {
+			continue
+		}
 
-		elem := reflect.ValueOf(addrs[i]).Elem()
-		sugar.Debugf("setting field %s with value %s", reflect.TypeOf(*e).Field(i).Name, elem.Interface())
-		v.Elem().Field(i).Set(elem)
+		var value any
+		if returnAddr {
+			value = v.Elem().Field(i).Addr().Interface()
+		} else {
+			value = v.Elem().Field(i).Interface()
+		}
+		fields = append(fields, value)
 	}
+	return fields
 }
