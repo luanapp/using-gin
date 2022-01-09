@@ -1,10 +1,11 @@
-package species
+package crud
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/luanapp/gin-example/pkg/model"
 )
 
 type (
@@ -16,31 +17,20 @@ type (
 		Delete(c *gin.Context)
 	}
 
-	Handler struct {
-		repo repositorier
-	}
-
-	Species struct {
-		Id             string `json:"id" form:"id" example:"996ff476-09bc-45f8-b79d-83b268de2485"`
-		ScientificName string `json:"scientific_name" form:"scientific_name" binding:"required" example:"Phyllobates terribilis"`
-		Genus          string `json:"genus" form:"genus" binding:"required" example:"Phyllobates"`
-		Family         string `json:"family" form:"family" binding:"required" example:"Dendrobatidae"`
-		Order          string `json:"order" form:"order" binding:"required" example:"Anura"`
-		Class          string `json:"class" form:"class" binding:"required" example:"Amphibia"`
-		Phylum         string `json:"phylum" form:"phylum" binding:"required" example:"Chordata"`
-		Kingdom        string `json:"kingdom" form:"kingdom" binding:"required" example:"Animalia"`
+	Handler[T model.Model] struct {
+		repo Repository[T]
 	}
 )
 
 // NewHandler returns a new repository object
-func NewHandler(repo repositorier) Handlerer {
-	return &Handler{
+func NewHandler[T model.Model](repo Repository[T]) Handlerer {
+	return &Handler[T]{
 		repo: repo,
 	}
 }
 
-func DefaultHandler() Handlerer {
-	return NewHandler(defaultRepository())
+func DefaultHandler[T model.Model]() Handlerer {
+	return NewHandler(defaultRepository[T]())
 }
 
 // GetAll retrieve all species
@@ -52,13 +42,13 @@ func DefaultHandler() Handlerer {
 // @Success 200 {array} Species
 // @Failure 500 {object} object
 // @Router /species [get]
-func (h *Handler) GetAll(c *gin.Context) {
-	sps, err := h.repo.getAll()
+func (h *Handler[T]) GetAll(c *gin.Context) {
+	entities, err := h.repo.GetAll()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, sps)
+	c.JSON(http.StatusOK, entities)
 }
 
 // GetById retrieve species with the given id
@@ -72,9 +62,9 @@ func (h *Handler) GetAll(c *gin.Context) {
 // @Failure 404 {object} object
 // @Failure 500 {object} object
 // @Router /species/{id} [get]
-func (h *Handler) GetById(c *gin.Context) {
+func (h *Handler[T]) GetById(c *gin.Context) {
 	id := c.Param("id")
-	sp, err := h.repo.getById(id)
+	sp, err := h.repo.GetById(id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("species with id %s not found", id)})
 		return
@@ -94,20 +84,20 @@ func (h *Handler) GetById(c *gin.Context) {
 // @Failure 400 {object} object
 // @Failure 500 {object} object
 // @Router /species [post]
-func (h *Handler) Save(c *gin.Context) {
-	sp := new(Species)
-	err := c.Bind(sp)
+func (h *Handler[T]) Save(c *gin.Context) {
+	e := new(T)
+	err := c.Bind(e)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	savedSP, err := h.repo.save(sp)
+	savedEntity, err := h.repo.Save(e)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, savedSP)
+	c.JSON(http.StatusCreated, savedEntity)
 }
 
 // Update updates the species with the given id in the database
@@ -122,18 +112,18 @@ func (h *Handler) Save(c *gin.Context) {
 // @Failure 400 {object} object
 // @Failure 500 {object} object
 // @Router /species/{id} [put]
-func (h *Handler) Update(c *gin.Context) {
+func (h *Handler[T]) Update(c *gin.Context) {
 	id := c.Param("id")
 
-	sp := new(Species)
-	err := c.Bind(sp)
+	e := new(T)
+	err := c.Bind(e)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	sp.Id = id
-	err = h.repo.update(sp)
+	(*e).SetId(id)
+	err = h.repo.Update(e)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -152,10 +142,10 @@ func (h *Handler) Update(c *gin.Context) {
 // @Success 202
 // @Failure 500 {object} object
 // @Router /species/{id} [delete]
-func (h *Handler) Delete(c *gin.Context) {
+func (h *Handler[T]) Delete(c *gin.Context) {
 	id := c.Param("id")
 
-	err := h.repo.delete(id)
+	err := h.repo.Delete(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

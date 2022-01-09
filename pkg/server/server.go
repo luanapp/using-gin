@@ -11,10 +11,10 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/luanapp/gin-example/pkg/domain/health"
-	"github.com/luanapp/gin-example/pkg/domain/species"
+	"github.com/luanapp/gin-example/pkg/crud"
 	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
+	"github.com/luanapp/gin-example/pkg/model"
 	_ "github.com/luanapp/gin-example/pkg/server/docs"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
@@ -79,12 +79,12 @@ func setupEngine() *gin.Engine {
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	healthHandler := health.NewHandler()
+	healthHandler := NewHandler()
 	healthRoute := r.Group("/status")
 	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
 	healthRoute.GET("/health", healthHandler.Health)
 
-	spHandler := species.DefaultHandler()
+	spHandler := crud.DefaultHandler[model.Species]()
 	spRoute := r.Group("/species")
 	spRoute.GET("", spHandler.GetAll)
 	spRoute.GET("/:id", spHandler.GetById)
