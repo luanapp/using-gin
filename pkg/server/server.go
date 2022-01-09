@@ -84,12 +84,16 @@ func setupEngine() *gin.Engine {
 	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
 	healthRoute.GET("/health", healthHandler.Health)
 
-	spHandler := crud.DefaultHandler[model.Species]()
-	spRoute := r.Group("/species")
-	spRoute.GET("", spHandler.GetAll)
-	spRoute.GET("/:id", spHandler.GetById)
-	spRoute.POST("", spHandler.Save)
-	spRoute.PUT("/:id", spHandler.Update)
-	spRoute.DELETE("/:id", spHandler.Delete)
+	addCrudRoutes[model.Species](r, "/species")
 	return r
+}
+
+func addCrudRoutes[T model.Model](r *gin.Engine, relativePath string) {
+	handler := crud.DefaultHandler[T]()
+	route := r.Group(relativePath)
+	route.GET("", handler.GetAll)
+	route.GET("/:id", handler.GetById)
+	route.POST("", handler.Save)
+	route.PUT("/:id", handler.Update)
+	route.DELETE("/:id", handler.Delete)
 }

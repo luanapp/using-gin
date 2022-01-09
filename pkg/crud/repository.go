@@ -76,7 +76,7 @@ func defaultRepository[T model.Model]() Repository[T] {
 func (r *repository[T]) GetAll() ([]T, error) {
 	fields, tableName, tablePrefix := r.getAllSelectFields()
 	selectAll := fmt.Sprintf(selectAllSQL, fields, tableName, tablePrefix)
-	sugar.Info(selectAll)
+	sugar.Debugf("select all: %s", selectAll)
 
 	rows, err := r.conn.Query(context.Background(), selectAll)
 	if err != nil {
@@ -103,7 +103,10 @@ func (r *repository[T]) GetAll() ([]T, error) {
 
 func (r *repository[T]) GetById(id string) (*T, error) {
 	fields, tableName, tablePrefix := r.getAllSelectFields()
-	rows := r.conn.QueryRow(context.Background(), fmt.Sprintf(getByIdSQL, fields, tableName, tablePrefix), id)
+	selectById := fmt.Sprintf(getByIdSQL, fields, tableName, tablePrefix)
+	sugar.Debugf("select by id: %s", selectById)
+
+	rows := r.conn.QueryRow(context.Background(), selectById, id)
 
 	var t T
 	fieldsAddrs := r.getAllSelectFieldsAddrs(t)
