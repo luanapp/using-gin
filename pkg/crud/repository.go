@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
+
 	"github.com/luanapp/gin-example/config/database"
 	"github.com/luanapp/gin-example/pkg/logger"
 	"github.com/luanapp/gin-example/pkg/model"

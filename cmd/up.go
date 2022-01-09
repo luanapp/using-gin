@@ -17,8 +17,9 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/luanapp/gin-example/config/database"
 	"github.com/spf13/cobra"
+
+	"github.com/luanapp/gin-example/config/database"
 )
 
 type (

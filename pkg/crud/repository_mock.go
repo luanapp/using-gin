@@ -4,6 +4,7 @@ package crud
 
 import (
 	"github.com/luanapp/gin-example/pkg/model"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
