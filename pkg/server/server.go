@@ -86,6 +86,7 @@ func setupEngine() *gin.Engine {
 	healthRoute.GET("/health", healthHandler.Health)
 
 	addCrudRoutes[model.Species](r, "/species")
+	addCrudRoutes[model.Sample](r, "/sample")
 	return r
 }
 

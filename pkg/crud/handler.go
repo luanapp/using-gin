@@ -40,7 +40,7 @@ func DefaultHandler[T model.Model]() Handlerer {
 // @Tags species
 // @Accept  json
 // @Produce  json
-// @Success 200 {array} Species
+// @Success 200 {array} T[model.Model]
 // @Failure 500 {object} object
 // @Router /species [get]
 func (h *Handler[T]) GetAll(c *gin.Context) {

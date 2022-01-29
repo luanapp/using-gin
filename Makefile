@@ -46,6 +46,24 @@ else
 endif
 .PHONY: migrate-down
 
+migrate-create: ## Create an empty migration file at ./migrations. Run `make migrate-create name=migration-name` to customize the migration file
+	go build -v -o build/migrate cmd/migrate/main.go
+ifndef name
+	./build/migrate create -n empty-migration
+else
+	./build/migrate create -n $(name)
+endif
+.PHONY: migrate-down
+
+migrate-create-table: ## Create a create table migration file at ./migrations. Run `make migrate-create tablename=my-table` to indicate the table name
+	go build -v -o build/migrate cmd/migrate/main.go
+ifndef name
+	./build/migrate create table -t table
+else
+	./build/migrate create -t $(tablename)
+endif
+.PHONY: migrate-down
+
 lint: ## Run lint
 	golangci-lint run
 .PHONY: lint

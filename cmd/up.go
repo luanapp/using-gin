@@ -36,6 +36,7 @@ var (
 		Long:    ``,
 		Example: "migrate up",
 		Run: func(cmd *cobra.Command, args []string) {
+			database.InitializeDB()
 			if upFlags.filename != "" {
 				err := database.UpFromFilename(upFlags.filename)
 				cobra.CheckErr(err)

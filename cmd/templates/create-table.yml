@@ -1,0 +1,9 @@
+name: {{ .MigrationName }}
+description: Put description here
+up: |-
+  CREATE TABLE IF NOT EXISTS natural_history_museum.{{ .TableName }} (
+      id varchar(36) CONSTRAINT species_id_key PRIMARY KEY,
+      
+  );
+down: |-
+  DROP TABLE IF EXISTS natural_history_museum.{{ .TableName }};
