@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/joho/godotenv"
+
 	"github.com/luanapp/gin-example/pkg/logger"
 )
 

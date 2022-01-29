@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine as builder
+FROM golang:1.18-rc-alpine as builder
 WORKDIR /build
 
 ARG GOARCH=amd64
@@ -13,7 +13,7 @@ FROM alpine
 WORKDIR /app
 ENV USING_GIN_ENV=production
 
-COPY --from=builder /build/.env .
+COPY .env .
 COPY --from=builder /build/build/run .
 
 ENTRYPOINT ["./run"]

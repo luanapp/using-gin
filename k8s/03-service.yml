@@ -6,7 +6,7 @@ metadata:
 spec:
   selector:
     app: using-gin
-  type: NodePort
+  type: LoadBalancer
   sessionAffinity: None
   ports:
   - port: 8080

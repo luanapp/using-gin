@@ -7,5 +7,3 @@ repos:
       always_run: true
     - id: go-imports
       always_run: true
-    - id: golangci-lint
-      always_run: true

@@ -17,8 +17,9 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/luanapp/gin-example/config/database"
 	"github.com/spf13/cobra"
+
+	"github.com/luanapp/gin-example/config/database"
 )
 
 var (
@@ -29,6 +30,7 @@ var (
 		Long:    ``,
 		Example: "migrate down",
 		Run: func(cmd *cobra.Command, args []string) {
+			database.InitializeDB()
 			if downFlags.filename != "" {
 				err := database.DownFromFilename(downFlags.filename)
 				cobra.CheckErr(err)

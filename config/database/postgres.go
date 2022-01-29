@@ -7,8 +7,10 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/luanapp/gin-example/pkg/logger"
+
 	"go.uber.org/zap"
+
+	"github.com/luanapp/gin-example/pkg/logger"
 )
 
 const createSchemaSQL = "CREATE SCHEMA IF NOT EXISTS natural_history_museum;"

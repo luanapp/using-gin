@@ -1,0 +1,5 @@
+name: {{ .MigrationName }}
+description: Put description here
+up: |-
+
+down: |-

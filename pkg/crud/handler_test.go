@@ -1,4 +1,4 @@
-package species
+package crud
 
 import (
 	"errors"
