@@ -1,0 +1,10 @@
+name: create-sample
+description: Put description here
+up: |-
+  CREATE TABLE IF NOT EXISTS natural_history_museum.sample (
+      id varchar(36) CONSTRAINT sample_id_key PRIMARY KEY,
+      species_id varchar(36) REFERENCES natural_history_museum.species(id),
+      type varchar(50) NOT NULL
+  );
+down: |-
+  DROP TABLE IF EXISTS natural_history_museum.sample;

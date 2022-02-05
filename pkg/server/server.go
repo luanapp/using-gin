@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -78,6 +79,8 @@ func setupMiddlewares(r *gin.Engine) {
 func setupEngine() *gin.Engine {
 	r := gin.Default()
 
+	setupMetrics(r)
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	healthHandler := NewHandler()
@@ -88,6 +91,13 @@ func setupEngine() *gin.Engine {
 	addCrudRoutes[model.Species](r, "/species")
 	addCrudRoutes[model.Sample](r, "/sample")
 	return r
+}
+
+func setupMetrics(r *gin.Engine) {
+	m := ginmetrics.GetMonitor()
+	m.SetMetricPath("/metrics")
+	m.SetMetricPrefix("nhm_")
+	m.Use(r)
 }
 
 func addCrudRoutes[T model.Model](r *gin.Engine, relativePath string) {

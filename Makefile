@@ -57,10 +57,10 @@ endif
 
 migrate-create-table: ## Create a create table migration file at ./migrations. Run `make migrate-create tablename=my-table` to indicate the table name
 	go build -v -o build/migrate cmd/migrate/main.go
-ifndef name
+ifndef tablename
 	./build/migrate create table -t table
 else
-	./build/migrate create -t $(tablename)
+	./build/migrate create table -t $(tablename)
 endif
 .PHONY: migrate-down
 

@@ -48,12 +48,12 @@ var (
 		},
 	}
 
-	dbFlags     = &createDatabaseFlags{}
-	createDBCmd = &cobra.Command{
+	dbFlags        = &createDatabaseFlags{}
+	createTableCmd = &cobra.Command{
 		Use:     "table",
 		Short:   "create a migration file to create a new table",
 		Long:    ``,
-		Example: "migrate create database create-species",
+		Example: "migrate create table create-species",
 		Run: func(cmd *cobra.Command, args []string) {
 			dbFlags.MigrationName = fmt.Sprintf("create-%s", dbFlags.TableName)
 			generate("./cmd/templates/create-table.yml", dbFlags)
@@ -92,9 +92,9 @@ func getMigrationName(data any) string {
 func init() {
 	createCmd.Flags().StringVarP(&cFlags.MigrationName, "name", "n", "", "Migration name")
 	cobra.CheckErr(createCmd.MarkFlagRequired("name"))
-	createCmd.AddCommand(createDBCmd)
+	createCmd.AddCommand(createTableCmd)
 
-	createDBCmd.Flags().StringVarP(&dbFlags.TableName, "table", "t", "", "Database table name")
+	createTableCmd.Flags().StringVarP(&dbFlags.TableName, "table", "t", "", "Database table name")
 
 	rootCmd.AddCommand(createCmd)
 }
