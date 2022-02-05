@@ -96,7 +96,7 @@ func setupEngine() *gin.Engine {
 func setupMetrics(r *gin.Engine) {
 	m := ginmetrics.GetMonitor()
 	m.SetMetricPath("/metrics")
-	m.SetMetricPrefix("nhm")
+	m.SetMetricPrefix("nhm_")
 	m.Use(r)
 }
 

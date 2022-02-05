@@ -1,0 +1,16 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: using-gin
+  labels:
+    app: using-gin
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: using-gin
+  endpoints:
+  - targetPort: 8080
+    path: /metrics
+    interval: 1m
