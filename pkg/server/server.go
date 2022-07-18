@@ -16,6 +16,7 @@ import (
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"github.com/luanapp/gin-example/pkg/crud"
+	"github.com/luanapp/gin-example/pkg/env"
 	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 	"github.com/luanapp/gin-example/pkg/model"
@@ -44,7 +45,7 @@ func (s *Server) Start() {
 	setupMiddlewares(r)
 
 	srv := http.Server{
-		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
+		Addr:    fmt.Sprintf(":%s", env.Instance.Server.Port),
 		Handler: r,
 	}
 	go func() {

@@ -13,4 +13,4 @@ spec:
   endpoints:
   - targetPort: 8080
     path: /metrics
-    interval: 1m
+    interval: 5m

@@ -9,6 +9,7 @@ init: ## Run me to download some of this project dependencies for coding normali
 	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go get github.com/vektra/mockery/v2/.../
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.46.2
 .PHONY: init
 
 commit: ## Commit changes using commitizen
@@ -53,7 +54,7 @@ ifndef name
 else
 	./build/migrate create -n $(name)
 endif
-.PHONY: migrate-down
+.PHONY: migrate-create
 
 migrate-create-table: ## Create a create table migration file at ./migrations. Run `make migrate-create tablename=my-table` to indicate the table name
 	go build -v -o build/migrate cmd/migrate/main.go
@@ -62,7 +63,7 @@ ifndef tablename
 else
 	./build/migrate create table -t $(tablename)
 endif
-.PHONY: migrate-down
+.PHONY: migrate-create-table
 
 lint: ## Run lint
 	golangci-lint run

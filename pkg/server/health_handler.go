@@ -3,13 +3,14 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	healthgo "github.com/hellofresh/health-go/v4"
 	httpCheck "github.com/hellofresh/health-go/v4/checks/http"
+
 	postgresCheck "github.com/hellofresh/health-go/v4/checks/postgres"
+	"github.com/luanapp/gin-example/pkg/env"
 )
 
 type (
@@ -42,13 +43,13 @@ func (h *Handler) StatusHandler() http.HandlerFunc {
 			Name:    "server-status",
 			Timeout: time.Second * 2,
 			Check: httpCheck.New(httpCheck.Config{
-				URL: fmt.Sprintf("http://localhost:%s/status/health", os.Getenv("PORT")),
+				URL: fmt.Sprintf("http://localhost:%s/status/health", env.Instance.Server.Port),
 			})},
 		healthgo.Config{
 			Name:    "postgres-status",
 			Timeout: time.Second * 3,
 			Check: postgresCheck.New(postgresCheck.Config{
-				DSN: fmt.Sprintf("%s?%s", os.Getenv("DATABASE_URL"), "sslmode=disable"),
+				DSN: fmt.Sprintf("%s?%s", env.Instance.Database.URL, "sslmode=disable"),
 			}),
 		},
 	))

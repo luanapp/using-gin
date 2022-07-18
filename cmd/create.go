@@ -79,11 +79,11 @@ func generate(tmplFile string, data any) {
 }
 
 func getMigrationName(data any) string {
-	switch data.(type) {
+	switch t := data.(type) {
 	case *createFlags:
-		return data.(*createFlags).MigrationName
+		return t.MigrationName
 	case *createDatabaseFlags:
-		return fmt.Sprintf("create-%s", data.(*createDatabaseFlags).TableName)
+		return fmt.Sprintf("create-%s", t.TableName)
 	default:
 		return "empty-migration"
 	}

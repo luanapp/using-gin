@@ -2,14 +2,15 @@ package database
 
 import (
 	"context"
-	"os"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"go.uber.org/zap"
 
+	"github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 )
 
@@ -24,17 +25,42 @@ func init() {
 	sugar = logger.New()
 }
 
+// GetConnection retrieve the application connection pool with the database
+func GetConnection() *pgxpool.Pool {
+	return connection
+}
+
 // InitializeDB this will start a connection pool with the database with the url DATABASE_URL
 // It will create the application schema if not exists. The same with the migration table
 func InitializeDB() {
 	var err error
-	url := os.Getenv("DATABASE_URL")
-	sugar.Infof("connecting to database %s", strings.Split(url, "@")[1])
-	connection, err = pgxpool.Connect(context.Background(), url)
+
+	url := env.Instance.Database.URL
+	config, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		sugar.Fatal(err)
 	}
 
+	initializeConfig(config)
+
+	sugar.Infof("connecting to database %s", strings.Split(url, "@")[1])
+	connection, err = pgxpool.ConnectConfig(context.Background(), config)
+	if err != nil {
+		sugar.Fatal(err)
+	}
+
+	initialDatabaseData()
+}
+
+func initializeConfig(config *pgxpool.Config) {
+	config.ConnConfig.LogLevel = pgx.LogLevelInfo
+	config.ConnConfig.Logger = zapadapter.NewLogger(logger.NewLogger())
+	config.ConnConfig.RuntimeParams = map[string]string{
+		"search_path": env.Instance.Database.Schema,
+	}
+}
+
+func initialDatabaseData() {
 	tx, err := connection.Begin(context.Background())
 	if err != nil {
 		sugar.Fatal()
@@ -56,11 +82,6 @@ func InitializeDB() {
 	if err != nil {
 		sugar.Fatal(err)
 	}
-}
-
-// GetConnection retrieve the application connection pool with the database
-func GetConnection() *pgxpool.Pool {
-	return connection
 }
 
 func rollback(tx pgx.Tx) {

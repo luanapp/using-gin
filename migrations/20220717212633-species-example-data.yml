@@ -1,0 +1,12 @@
+name: species-example-data
+description: Put description here
+up: |-
+  INSERT INTO natural_history_museum.species(id,scientific_name,genus,family,"order",class,phylum,kingdom) VALUES
+  (gen_random_uuid(), 'Phyllobates terribilis','Phyllobates','Dendrobatidae','Anura','Amphibia','Chordata','Animalia'),
+  (gen_random_uuid(), 'Allobates alessandroi','Allobates','Dendrobatidae','Anura','Amphibia','Chordata','Animalia'),
+  (gen_random_uuid(), 'Ameerega bilinguis','Ameerega','Dendrobatidae','Anura','Amphibia','Chordata','Animalia'),
+  (gen_random_uuid(), 'Ameerega andina','Ameerega','Dendrobatidae','Anura','Amphibia','Chordata','Animalia'),
+  (gen_random_uuid(), 'Ameerega boehmei','Ameerega','Dendrobatidae','Anura','Amphibia','Chordata','Animalia');
+down: |-
+  DELETE FROM natural_history_museum.species
+  WHERE scientific_name IN ('Phyllobates terribilis', 'Allobates alessandroi', 'Ameerega bilinguis', 'Ameerega andina', 'Ameerega boehmei')

@@ -1,9 +1,9 @@
 default_stages: [commit]
 repos:
 - repo: git://github.com/dnephin/pre-commit-golang
-  rev: v0.4.0
+  rev: master
   hooks:
     - id: go-fmt
       always_run: true
-    - id: go-imports
-      always_run: true
+#    - id: go-imports
+#      always_run: true

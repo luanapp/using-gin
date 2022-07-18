@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/luanapp/gin-example/config/database"
+	"github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 	"github.com/luanapp/gin-example/pkg/model"
 )
@@ -34,24 +35,25 @@ type (
 const (
 	dbTag        = "db"
 	selectAllSQL = `
-SELECT %s FROM natural_history_museum.%s %s;
+SELECT %s FROM %s.%s %s;
 `
 	getByIdSQL = `
-SELECT %s FROM natural_history_museum.%s %s WHERE sp.id = $1;
+SELECT %s FROM %s.%s %s WHERE id = $1;
 `
 	insertSpSQL = `
-INSERT INTO natural_history_museum.%s (%s) VALUES (%s);
+INSERT INTO %s.%s (%s) VALUES (%s);
 `
 	updateSpSQL = `
-UPDATE natural_history_museum.%s SET %s WHERE id = $8;
+UPDATE %s.%s SET %s WHERE id = $8;
 `
 	deleteSpSQL = `
-DELETE FROM natural_history_museum.%s
+DELETE FROM %s.%s
 WHERE id = $1;
 `
 )
 
 var (
+	schema     string
 	sugar      *zap.SugaredLogger
 	tableNames = map[reflect.Type][]string{
 		reflect.TypeOf(model.Species{}): {"species", "sp"},
@@ -60,6 +62,7 @@ var (
 
 func init() {
 	sugar = logger.New()
+	schema = env.Instance.Database.Schema
 }
 
 func defaultRepository[T model.Model]() Repository[T] {
@@ -70,7 +73,7 @@ func defaultRepository[T model.Model]() Repository[T] {
 
 func (r *repository[T]) GetAll() ([]T, error) {
 	fields, tableName, tablePrefix := r.getSelectAllFields()
-	selectAll := fmt.Sprintf(selectAllSQL, fields, tableName, tablePrefix)
+	selectAll := fmt.Sprintf(selectAllSQL, fields, schema, tableName, tablePrefix)
 	sugar.Debugf("select all: %s", selectAll)
 
 	rows, err := r.conn.Query(context.Background(), selectAll)
@@ -97,7 +100,7 @@ func (r *repository[T]) GetAll() ([]T, error) {
 
 func (r *repository[T]) GetById(id string) (*T, error) {
 	fields, tableName, tablePrefix := r.getSelectAllFields()
-	selectById := fmt.Sprintf(getByIdSQL, fields, tableName, tablePrefix)
+	selectById := fmt.Sprintf(getByIdSQL, fields, schema, tableName, tablePrefix)
 	sugar.Debugf("select by id: %s", selectById)
 
 	rows := r.conn.QueryRow(context.Background(), selectById, id)
@@ -117,7 +120,7 @@ func (r *repository[T]) Save(t *T) (*T, error) {
 	(*t).SetId(uuid.NewString())
 
 	table, fieldNames, fieldValues := r.getInsertionFields()
-	insert := fmt.Sprintf(insertSpSQL, table, fieldNames, fieldValues)
+	insert := fmt.Sprintf(insertSpSQL, table, schema, fieldNames, fieldValues)
 	fields := r.getVarFields(t, false, false)
 
 	sugar.Debugf("insert: %s", insert)
@@ -139,7 +142,7 @@ func (r *repository[T]) Save(t *T) (*T, error) {
 
 func (r *repository[T]) Update(t *T) error {
 	tableName, fieldNames := r.getUpdateFields()
-	update := fmt.Sprintf(updateSpSQL, tableName, fieldNames)
+	update := fmt.Sprintf(updateSpSQL, tableName, schema, fieldNames)
 	fields := r.getVarFields(t, false, true)
 
 	sugar.Debugf("update: %s", update)
@@ -155,7 +158,7 @@ func (r *repository[T]) Update(t *T) error {
 
 func (r *repository[T]) Delete(id string) error {
 	tableData := r.getTableData()
-	_, err := r.conn.Exec(context.Background(), fmt.Sprintf(deleteSpSQL, tableData[0]), id)
+	_, err := r.conn.Exec(context.Background(), fmt.Sprintf(deleteSpSQL, schema, tableData[0]), id)
 	if err != nil {
 		return err
 	}
