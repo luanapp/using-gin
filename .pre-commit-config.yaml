@@ -5,5 +5,5 @@ repos:
   hooks:
     - id: go-fmt
       always_run: true
-#    - id: go-imports
-#      always_run: true
+    - id: go-imports
+      always_run: true

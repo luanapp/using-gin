@@ -17,8 +17,8 @@ import (
 const createSchemaSQL = "CREATE SCHEMA IF NOT EXISTS natural_history_museum;"
 
 var (
-	connection *pgxpool.Pool
 	sugar      *zap.SugaredLogger
+	connection *pgxpool.Pool
 )
 
 func init() {
