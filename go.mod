@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/gin-contrib/cors v1.3.1
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.3.0
 	github.com/hellofresh/health-go/v4 v4.5.0
 	github.com/jackc/pgx/v4 v4.13.0
