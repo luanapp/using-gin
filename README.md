@@ -22,14 +22,19 @@ make run
 ### Run database migrations
 There are some database migrations to create the database structure.
 
-Jus run:
+Create the database container (docker):
+```bash
+make run-db
+```
+
+Just run:
 ```bash
 make migrate-up
 ```
 
 To undo the migrations, run:
 ```bash
-make migrate-up
+make migrate-down
 ```
 
 Happy coding!
