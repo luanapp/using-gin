@@ -3,10 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"gopkg.in/yaml.v3"
 )
 
@@ -184,7 +183,7 @@ func migrationFilesFromDB() []string {
 func readMigrationFromFiles() []*migration {
 	var mFiles []*migration
 
-	files, err := ioutil.ReadDir(migrationsBaseDir)
+	files, err := os.ReadDir(migrationsBaseDir)
 	if err != nil {
 		sugar.Fatal(err)
 	}
@@ -199,7 +198,7 @@ func readMigrationFromFiles() []*migration {
 func readMigrationFromFile(baseDir string, file string) *migration {
 	mFile := &migration{}
 	fullPath := fmt.Sprintf("%s/%s", baseDir, file)
-	bytes, _ := ioutil.ReadFile(fullPath)
+	bytes, _ := os.ReadFile(fullPath)
 	err := yaml.Unmarshal(bytes, mFile)
 	if err != nil {
 		sugar.Fatal(err)

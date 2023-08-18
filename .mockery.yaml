@@ -1,0 +1,9 @@
+quiet: false
+with-expecter: true
+packages:
+  github.com/luanapp/gin-example/pkg/crud:
+    config:
+      dir: "pkg/crud/mocks"
+      filename: "{{.InterfaceName}}_mock.go"
+    interfaces:
+      Repository:

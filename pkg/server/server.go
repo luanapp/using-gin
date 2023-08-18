@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,17 +11,16 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	ginZap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/penglongli/gin-metrics/ginmetrics"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
-
+	"github.com/luanapp/gin-example/config/env"
 	"github.com/luanapp/gin-example/pkg/crud"
-	"github.com/luanapp/gin-example/pkg/env"
-	_ "github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 	"github.com/luanapp/gin-example/pkg/model"
 	_ "github.com/luanapp/gin-example/pkg/server/docs"
+	"github.com/penglongli/gin-metrics/ginmetrics"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"go.uber.org/zap"
 )
@@ -37,21 +37,21 @@ func init() {
 }
 
 func NewServer() *Server {
-	return &Server{}
+	return new(Server)
 }
 
 func (s *Server) Start() {
 	r := setupEngine()
-	setupMiddlewares(r)
 
 	srv := http.Server{
 		Addr:    fmt.Sprintf(":%s", env.Instance.Server.Port),
 		Handler: r,
 	}
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			sugar.Fatalf("listen: %s\n", err)
 		}
+		sugar.Infof("server is up in the port %d", env.Instance.Server.Port)
 	}()
 
 	quit := make(chan os.Signal, 1)
@@ -69,29 +69,25 @@ func (s *Server) Start() {
 
 }
 
+func setupEngine() *gin.Engine {
+	r := gin.New()
+	setupMiddlewares(r)
+	setupMetrics(r)
+	addHelperRoutes(r)
+	addCrudRoutes[model.Species](r, "/species")
+	addCrudRoutes[model.Sample](r, "/sample")
+	return r
+}
+
 func setupMiddlewares(r *gin.Engine) {
 	r.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
 		AllowMethods:    []string{http.MethodHead, http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions},
 		AllowHeaders:    []string{"*"},
 	}))
-}
-
-func setupEngine() *gin.Engine {
-	r := gin.Default()
-
-	setupMetrics(r)
-
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	healthHandler := NewHandler()
-	healthRoute := r.Group("/status")
-	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
-	healthRoute.GET("/health", healthHandler.Health)
-
-	addCrudRoutes[model.Species](r, "/species")
-	addCrudRoutes[model.Sample](r, "/sample")
-	return r
+	l := logger.NewLogger()
+	r.Use(ginZap.Ginzap(l, time.RFC3339, true))
+	r.Use(ginZap.RecoveryWithZap(l, true))
 }
 
 func setupMetrics(r *gin.Engine) {
@@ -101,7 +97,16 @@ func setupMetrics(r *gin.Engine) {
 	m.Use(r)
 }
 
-func addCrudRoutes[T model.Model](r *gin.Engine, relativePath string) {
+func addHelperRoutes(r *gin.Engine) {
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	healthHandler := NewHandler()
+	healthRoute := r.Group("/status")
+	healthRoute.GET("", gin.WrapF(healthHandler.StatusHandler()))
+	healthRoute.GET("/health", healthHandler.Health)
+}
+
+func addCrudRoutes[T any](r *gin.Engine, relativePath string) {
 	handler := crud.DefaultHandler[T]()
 	route := r.Group(relativePath)
 	route.GET("", handler.GetAll)

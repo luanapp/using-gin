@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/luanapp/gin-example/config/env"
+
 	"github.com/gin-gonic/gin"
 	healthgo "github.com/hellofresh/health-go/v4"
 	httpCheck "github.com/hellofresh/health-go/v4/checks/http"
 
 	postgresCheck "github.com/hellofresh/health-go/v4/checks/postgres"
-	"github.com/luanapp/gin-example/pkg/env"
 )
 
 type (
@@ -32,7 +33,7 @@ func NewHandler() Handlerer {
 // @Description This returns a JSON {"status": "OK"} with a status 200 if the server is up
 // @Tags health
 // @Success 200 {object} object
-// @Router /health [get]
+// @Router /status/health [get]
 func (h *Handler) Health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }

@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"text/template"
 	"time"
@@ -62,7 +61,7 @@ var (
 )
 
 func generate(tmplFile string, data any) {
-	tmpl, err := ioutil.ReadFile(tmplFile)
+	tmpl, err := os.ReadFile(tmplFile)
 	cobra.CheckErr(err)
 
 	parsed, err := template.New("migration").Parse(string(tmpl))

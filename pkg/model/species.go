@@ -12,11 +12,3 @@ type (
 		Kingdom        string `json:"kingdom" form:"kingdom" binding:"required" example:"Animalia" db:"kingdom"`
 	}
 )
-
-func (s Species) GetId() string {
-	return s.Id
-}
-
-func (s Species) SetId(id string) {
-	s.Id = id
-}

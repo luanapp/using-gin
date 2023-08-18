@@ -9,5 +9,5 @@ data:
   PORT: "8080"
   ## TODO: create secret and add bellow as comment to retrieve passwd
   ## kubectl get secret --namespace default psql-test-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode
-  DATABASE_URL: "postgres://postgres:postgres@192.168.15.135:5432/postgres"
+  DATABASE_URL: "postgres://postgres:postgres@192.168.15.18:5432/postgres"
   GIN_MODE: "release"

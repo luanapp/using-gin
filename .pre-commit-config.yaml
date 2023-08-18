@@ -1,9 +1,14 @@
 default_stages: [commit]
 repos:
-- repo: git://github.com/dnephin/pre-commit-golang
-  rev: master
-  hooks:
-    - id: go-fmt
-      always_run: true
-    - id: go-imports
-      always_run: true
+  - repo: https://github.com/tekwizely/pre-commit-golang
+    rev: v1.0.0-rc.1
+    hooks:
+      - id: go-fmt
+        verbose: true
+      - id: go-imports
+        args: [-l, -d, -w]
+        verbose: true
+      - id: go-mod-tidy
+        verbose: true
+      - id: golangci-lint-mod
+        verbose: true

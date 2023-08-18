@@ -1,16 +1,10 @@
 package env
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"strings"
 
-	"go.uber.org/zap"
-
 	"github.com/joho/godotenv"
-
-	"github.com/luanapp/gin-example/pkg/logger"
 )
 
 type (
@@ -34,14 +28,11 @@ const (
 )
 
 var (
-	sugar      *zap.SugaredLogger
-	Instance   = &Env{}
+	Instance   = new(Env)
 	production = map[string]string{"production": "production", "prod": "prod"}
 )
 
 func init() {
-	sugar = logger.New()
-
 	loadEnvFile()
 
 	Instance.Environment = getEnvOrDefault(environment, "development")
@@ -52,19 +43,8 @@ func init() {
 
 func loadEnvFile() {
 	envFiles := []string{".env"}
-	currEnv := os.Getenv("USING_GIN_ENV")
-	sugar.Infof("curent environment: %s", currEnv)
 
-	if currEnv == "" {
-		envFiles = append(envFiles, ".env.local")
-	} else if currEnv != "production" {
-		envFiles = append(envFiles, fmt.Sprintf("%s/%s", ".env.", currEnv))
-	}
-
-	err := godotenv.Load(envFiles...)
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load(envFiles...)
 }
 
 func getEnvOrDefault(key string, defaultValue string) string {

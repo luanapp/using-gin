@@ -5,11 +5,3 @@ type Sample struct {
 	SpecieId string `json:"speciesId" form:"species" example:"996ff476-09bc-45f8-b79d-83b268de2485" db:"specieId,fk,species:id"`
 	Type     string `json:"type" form:"type" example:"tissue" db:"type"`
 }
-
-func (s Sample) GetId() string {
-	return s.Id
-}
-
-func (s Sample) SetId(id string) {
-	s.Id = id
-}

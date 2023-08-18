@@ -4,13 +4,17 @@ import (
 	"context"
 	"strings"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/log/zapadapter"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/tracelog"
+
+	"github.com/luanapp/gin-example/config/env"
+
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+	pgxzap "github.com/jackc/pgx-zap"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"go.uber.org/zap"
 
-	"github.com/luanapp/gin-example/pkg/env"
 	"github.com/luanapp/gin-example/pkg/logger"
 )
 
@@ -44,7 +48,7 @@ func InitializeDB() {
 	initializeConfig(config)
 
 	sugar.Infof("connecting to database %s", strings.Split(url, "@")[1])
-	connection, err = pgxpool.ConnectConfig(context.Background(), config)
+	connection, err = pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
 		sugar.Fatal(err)
 	}
@@ -53,10 +57,16 @@ func InitializeDB() {
 }
 
 func initializeConfig(config *pgxpool.Config) {
-	config.ConnConfig.LogLevel = pgx.LogLevelInfo
-	config.ConnConfig.Logger = zapadapter.NewLogger(logger.NewLogger())
+	config.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger:   pgxzap.NewLogger(logger.NewLogger()),
+		LogLevel: tracelog.LogLevelDebug,
+	}
 	config.ConnConfig.RuntimeParams = map[string]string{
 		"search_path": env.Instance.Database.Schema,
+	}
+	config.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		pgxuuid.Register(conn.TypeMap())
+		return nil
 	}
 }
 

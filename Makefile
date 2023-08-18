@@ -1,6 +1,8 @@
 # PID file will store the server process id when it's running on development mode
-PROJECT_NAME=$(shell basename "$(PWD)")
-PID=/tmp/.$(PROJECT_NAME).pid
+PROJECT_NAME=$(shell go list -m)
+PID=/tmp/.$(shell basename "$(PWD)").pid
+
+######### Project initialization, code generation and commit #########
 
 init: ## Run me to download some of this project dependencies for coding normalization
 	pip3 install pre-commit
@@ -8,26 +10,27 @@ init: ## Run me to download some of this project dependencies for coding normali
 	pre-commit install --hook-type pre-push
 	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
 	go install github.com/swaggo/swag/cmd/swag@latest
-	go get github.com/vektra/mockery/v2/.../
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.46.2
+	go install github.com/vektra/mockery/v2@v2.32.4
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.54.1
 .PHONY: init
 
 commit: ## Commit changes using commitizen
 	@git cz
 .PHONY: commit
 
-install: ## Rebuild the go.mod and go.sum files (removing unused ones)
-	@go mod tidy
-.PHONY: install
 
 generate: ## Run go generate in the project root
 	@go generate ./...
-	@mockery --exported --dir ./pkg/domain/species/ --name repositorier --output ./pkg/domain/species --structname repositoryMock --filename repository_mock.go --inpackage
+	@mockery
 .PHONY: generate
 
 generate-docs: ## Generate project documentation
 	@swag init -g cmd/using-gin/main.go -o pkg/server/docs
 .PHONY: generate-docs
+
+###################  END ###################
+
+######### Database stuff #########
 
 migrate-up: ## Run all migrations not yet applied to the database (the migrations are located in the ./migrations folder). Run `make migrate-up filename=some_file.yml` to run the migration only for this file
 	go build -v -o build/migrate cmd/migrate/main.go
@@ -65,6 +68,20 @@ else
 endif
 .PHONY: migrate-create-table
 
+###################  END ###################
+
+
+######### Code build and testing #########
+
+run-db:
+	@docker run -d -v postgres:/data/postgres --name species_db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=postgres -p 5432:5432 postgres:latest
+.PHONY: run-db
+
+stop-db:
+	docker container stop species_db
+	docker container rm species_db
+.PHONY: stop-db
+
 lint: ## Run lint
 	golangci-lint run
 .PHONY: lint
@@ -72,6 +89,14 @@ lint: ## Run lint
 build: ## Build project binary
 	@go build -v -o build/bin cmd/using-gin/main.go
 .PHONY: build
+
+test: ## Run the unit tests
+	@ENVIRONMENT=test richgo test -cover ./...
+.PHONY: test
+###################  END ###################
+
+
+######### Running the application #########
 
 run: build ## Run the application
 	./build/bin 2>&1 & echo $$! >> $(PID) &
