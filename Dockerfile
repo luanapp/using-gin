@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine as builder
+FROM golang:1.24-alpine as builder
 WORKDIR /build
 
 ARG GOARCH=amd64
@@ -9,7 +9,7 @@ COPY . .
 
 RUN GOOS=linux GOARCH=$GOARCH GO111MODULE=on go build -v -o ./build/run cmd/using-gin/main.go
 
-FROM alpine:latest
+FROM scratch AS prod
 WORKDIR /app
 ENV USING_GIN_ENV=production
 

@@ -1,5 +1,3 @@
-quiet: false
-with-expecter: true
 packages:
   github.com/luanapp/gin-example/pkg/crud:
     config:

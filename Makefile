@@ -9,9 +9,10 @@ init: ## Run me to download some of this project dependencies for coding normali
 	pre-commit install --hook-type pre-commit
 	pre-commit install --hook-type pre-push
 	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
+	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
-	go install github.com/vektra/mockery/v2@v2.32.4
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.54.1
+	go install github.com/vektra/mockery/v3@v3.5.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v2.2.2
 .PHONY: init
 
 commit: ## Commit changes using commitizen
