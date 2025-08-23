@@ -10,7 +10,7 @@ require (
 	github.com/hellofresh/health-go/v4 v4.7.0
 	github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
 	github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
-	github.com/jackc/pgx/v5 v5.4.3
+	github.com/jackc/pgx/v5 v5.5.4
 	github.com/joho/godotenv v1.4.0
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/spf13/cobra v1.6.1
