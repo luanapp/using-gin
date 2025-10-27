@@ -3,9 +3,8 @@ kind: Ingress
 metadata:
   name: using-gin-ingress
   annotations:
-    #nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    #nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
 
 spec:
   ingressClassName: nginx
@@ -13,8 +12,8 @@ spec:
     - host: myapp.local
       http:
         paths:
-        - pathType: Prefix
-          path: /using-gin
+        - pathType: ImplementationSpecific
+          path: /using-gin/(.*)
           backend:
             service:
               name: using-gin-svc
