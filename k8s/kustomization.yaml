@@ -1,0 +1,7 @@
+resources:
+  - 01-configmap.yml
+  - 02-deployment.yml
+  - 03-service.yml
+  - 04-ingress.yml
+  - 05-hpa.yml
+  - 06-service-monitor.yml

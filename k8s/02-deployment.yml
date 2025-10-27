@@ -4,14 +4,14 @@ kind: Deployment
 metadata:
   labels:
     app: using-gin
-  name: using-gin
+  name: using-gin-deploy
 spec:
   revisionHistoryLimit: 5
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
+      maxSurge: 30%
+      maxUnavailable: 20%
   selector:
     matchLabels:
       app: using-gin
@@ -19,15 +19,16 @@ spec:
     metadata:
       labels:
         app: using-gin
+      name: using-gin
     spec:
       imagePullSecrets:
       - name: regcred
       containers:
       - name: natural-history-museum
-        image: localhost:5001/using-gin:v0.1-arm64
+        image: using-gin:v1.0
         ports:
         - containerPort: 8080
-        imagePullPolicy: Always
+        imagePullPolicy: Never
         envFrom:
         - configMapRef:
             name: using-gin
@@ -35,16 +36,18 @@ spec:
           initialDelaySeconds: 20
           httpGet:
             port: 8080
-            path: /status/health
+            path: /status
             scheme: HTTP
           timeoutSeconds: 3
+          failureThreshold: 2
         readinessProbe:
           initialDelaySeconds: 10
           httpGet:
             port: 8080
-            path: /status
+            path: /status/health
             scheme: HTTP
           timeoutSeconds: 3
+          failureThreshold: 3
         resources:
           limits:
             cpu: 500m
