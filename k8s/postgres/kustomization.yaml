@@ -1,0 +1,3 @@
+resources:
+  - 01-persistent-volume.yml
+  - 02-persistent-volume-claim.yml
