@@ -202,5 +202,44 @@ func TestHandler_Update_StatusOK(t *testing.T) {
 	e.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusAccepted, rec.Code)
-	assert.Empty(t, string(rec.Body.String()))
+	assert.Empty(t, rec.Body.String())
+}
+
+func TestHandler_Update_StatusBadRequest(t *testing.T) {
+	// Arrange
+	repo := crud.NewMockRepository[model.Species](t)
+	specie1 := mockSpecies[0]
+
+	e := gin.Default()
+	handler := NewHandler[model.Species](repo)
+	e.PUT("/species/:id", handler.Update)
+
+	req := httptest.NewRequest(http.MethodPut, "/species/"+specie1.Id, bytes.NewReader([]byte("{invalid json}")))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Act
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	// Assert
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestHandler_Update_Status500(t *testing.T) {
+	repo := crud.NewMockRepository[model.Species](t)
+	specie1 := mockSpecies[0]
+	expected, _ := json.Marshal(specie1)
+	repo.EXPECT().Update(specie1.Id, &specie1).Return(errors.New("some unexpected error"))
+
+	e := gin.Default()
+	handler := NewHandler[model.Species](repo)
+	e.PUT("/species/:id", handler.Update)
+
+	req := httptest.NewRequest(http.MethodPut, "/species/"+specie1.Id, bytes.NewReader(expected))
+	req.Header.Set("Content-Type", "application/json")
+
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
