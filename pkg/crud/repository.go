@@ -120,7 +120,7 @@ func (r repository[T]) GetById(id string) (*T, error) {
 func (r repository[T]) Save(t *T) (*T, error) {
 	table, fieldNames, fieldValues := r.getInsertionFields()
 	insert := fmt.Sprintf(insertSQL, schema, table, fieldNames, fieldValues)
-	fields := r.getVarFields(t, false, false)
+	fields := r.getVarFields(t, false, true)
 
 	sugar.Debugf("insert: %s", insert)
 
