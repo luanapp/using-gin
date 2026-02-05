@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/pprof"
 	ginZap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/luanapp/gin-example/config/env"
@@ -88,6 +89,7 @@ func setupMiddlewares(r *gin.Engine) {
 	l := logger.NewLogger()
 	r.Use(ginZap.Ginzap(l, time.RFC3339, true))
 	r.Use(ginZap.RecoveryWithZap(l, true))
+	pprof.Register(r)
 }
 
 func setupMetrics(r *gin.Engine) {

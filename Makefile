@@ -109,6 +109,11 @@ stop: ## Stop current running server
 	@-rm $(PID)
 .PHONY: stop
 
+######## PProf calls ############
+pprof-profile: ## Take a 30-second CPU profile
+	@go tool pprof http://localhost:8080/debug/pprof/profile?seconds=30
+.PHONY: pprof-profile
+
 help: ## Display help screen
 	@echo "Usage:"
 	@echo "	make [COMMAND]"
