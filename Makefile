@@ -94,6 +94,10 @@ build: ## Build project binary
 test: ## Run the unit tests
 	@ENVIRONMENT=test richgo test -cover ./...
 .PHONY: test
+
+stress: ## Run k6 stress tests
+	 k6 run k6/stress-test.js
+.PHONY: stress
 ###################  END ###################
 
 
