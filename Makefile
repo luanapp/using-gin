@@ -5,10 +5,10 @@ PID=/tmp/.$(shell basename "$(PWD)").pid
 ######### Project initialization, code generation and commit #########
 
 init: ## Run me to download some of this project dependencies for coding normalization
-	pip3 install pre-commit
+	pipx install pre-commit
 	pre-commit install --hook-type pre-commit
 	pre-commit install --hook-type pre-push
-	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo ./commitizen-go install && cd .. && rm -rf commitizen-go
+	git clone https://github.com/lintingzhen/commitizen-go.git && cd commitizen-go && make && sudo make install && cd .. && rm -rf commitizen-go
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go install github.com/vektra/mockery/v3@v3.5.0
