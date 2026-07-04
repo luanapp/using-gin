@@ -2,7 +2,7 @@
 PROJECT_NAME=$(shell go list -m)
 PID=/tmp/.$(shell basename "$(PWD)").pid
 
-######### Project initialization, code generation and commit #########		
+######### Project initialization, code generation and commit #########
 init: ## Run me to download some of this project dependencies for coding normalization
 	pipx install pre-commit
 	pre-commit install --hook-type pre-commit
@@ -17,7 +17,6 @@ init: ## Run me to download some of this project dependencies for coding normali
 commit: ## Commit changes using commitizen
 	@git cz
 .PHONY: commit
-
 
 generate: ## Run go generate in the project root
 	@go generate ./...
